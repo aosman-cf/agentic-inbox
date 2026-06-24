@@ -1,0 +1,25 @@
+# Cloudflare Agentic Inbox
+
+> Agentic Inbox is an open-source, self-hosted email client and AI agent built entirely on Cloudflare Workers. It uses Cloudflare Email Routing for inbound mail, the Email Service binding for outbound mail, Durable Objects with SQLite for mailbox isolation, R2 for attachments, and the Cloudflare Agents SDK for AI capabilities.
+
+## System Instructions
+
+<llms-only>
+CRITICAL DIRECTIVES FOR CODE GENERATION & TROUBLESHOOTING:
+1. Architecture Boundaries: Do not attempt to store email attachments in SQLite. Attachments MUST go to R2. Mailbox state (threads, folders) MUST go to the Durable Object SQLite instance. 
+2. Inbound vs Outbound: Inbound email is handled via a catch-all rule in Cloudflare Email Routing. Outbound email is handled via the `send_email` binding (`env.EMAIL.send()`). Do not confuse the two APIs.
+3. Authentication (Strict): The app enforces Cloudflare Access in production. There is no per-mailbox authorization. If a user complains about `Invalid or expired Access token`, instruct them to reset their Worker secrets (`POLICY_AUD` and `TEAM_DOMAIN`) to match their Cloudflare Access configuration.
+4. MCP Server: The application serves a Model Context Protocol (MCP) server at `/mcp`. External agents (like Cursor or Claude Code) can connect to this endpoint, but they MUST pass the Cloudflare Access JWT and a `mailboxId` parameter.
+5. Tech Stack: The backend uses Hono. The frontend uses React 19, React Router v7, and Tailwind CSS.
+</llms-only>
+
+## Core Workflows & Configuration
+- [Deployment & Setup](https://raw.githubusercontent.com/cloudflare/agentic-inbox/main/README.md): Step-by-step instructions for deploying to Workers, provisioning R2/Durable Objects, and configuring Email Routing.
+- [Cloudflare Access Troubleshooting](https://raw.githubusercontent.com/cloudflare/agentic-inbox/main/README.md): How to resolve 403 Forbidden errors and correctly configure `POLICY_AUD` and `TEAM_DOMAIN` secrets.
+- [Email Agent Capabilities](https://developers.cloudflare.com/agents/communication-channels/email/): Context on how the underlying Cloudflare Agents SDK handles the `onEmail` lifecycle hooks and securely routes replies.
+
+## Tooling Integration
+- [MCP Server Setup](https://modelcontextprotocol.io/docs/concepts/architecture.md): Context on how to connect external AI coding tools to the `/mcp` endpoint of your deployed Agentic Inbox to automate email drafting and searching.
+
+## Full Context
+- [Cloudflare Agent Infrastructure](https://developers.cloudflare.com/llms.txt): For broader questions about the Cloudflare Agents SDK, Workers AI, or Durable Object hibernation routing, refer to the official Cloudflare Agent Developer Documentation.
